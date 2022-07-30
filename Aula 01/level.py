@@ -73,6 +73,40 @@ class Level:
             self.velocidade_mapa = 0
             jogador.velocidade = 8
 
+    def colisao_horizontal(self):
+        """Função destinada a verificar a colisão do personagem na horizontal"""
+        # Obter as informações do sprite do personagem
+        jogador = self.jogador.sprite
+        jogador.rect.x += jogador.direcao.x * jogador.velocidade
+
+        # Detectar a colisão entre o personagem e os tiles
+        for sprite in self.tiles.sprites():
+            if sprite.rect.colliderect(jogador.rect):
+                # O lado esquerdo do personagem encosta no lado direito do tile
+                if jogador.direcao.x < 0:
+                    jogador.rect.left = sprite.rect.right
+                # O lado direito do personagem encosta no lado esquerdo do tile
+                elif jogador.direcao.x > 0:
+                    jogador.rect.right = sprite.rect.left
+
+    def colisao_vertical(self):
+        """Função destinada a verificar a colisão do personagem na vertical"""
+        # Obter as informações do sprite do personagem
+        jogador = self.jogador.sprite
+        jogador.aplicar_gravidade()
+
+        # Detectar a colisão entre o personagem e os tiles
+        for sprite in self.tiles.sprites():
+            if sprite.rect.colliderect(jogador.rect):
+                # A parte de baixo do personagem encosta na parte de cima do tile
+                if jogador.direcao.y > 0:
+                    jogador.rect.bottom = sprite.rect.top
+                    jogador.direcao.y = 0  # Isso evita que o personagem passe do chão
+                # A parte de cima do personagem encosta na parte de baixo do tile
+                elif jogador.direcao.y < 0:
+                    jogador.rect.top = sprite.rect.bottom
+                    jogador.direcao.y = 0  # Isso evita que o personagem fique grudado no teto
+
     def executar(self):
         """Função destinada a executar o level"""
         # Atualizar o mapa
@@ -84,8 +118,14 @@ class Level:
         # Atualizar o personagem
         self.jogador.update()
 
-        # Desenhar o personagem na tela
-        self.jogador.draw(self.tela)
-
         # Movimentar o mapa quando o personagem chegar ao limite da tela
         self.scroll_x()
+
+        # Colisão horizontal do personagem
+        self.colisao_horizontal()
+
+        # Colisão vertical do personagem
+        self.colisao_vertical()
+
+        # Desenhar o personagem na tela
+        self.jogador.draw(self.tela)

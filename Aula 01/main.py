@@ -1,4 +1,3 @@
-# ToDo: 42:07 minutos do vídeo!!!
 # Importar as bibliotecas
 import sys
 import pygame

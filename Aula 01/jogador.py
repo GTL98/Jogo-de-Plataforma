@@ -18,6 +18,8 @@ class Jogador(pygame.sprite.Sprite):
 
         # Configurações do movimento do personagem
         self.velocidade = 8
+        self.gravidade = 0.8
+        self.velocidade_pulo = -16
         self.direcao = pygame.math.Vector2(0, 0)
 
     def obter_entrada(self):
@@ -37,10 +39,21 @@ class Jogador(pygame.sprite.Sprite):
         else:
             self.direcao.x = 0
 
+        # Pular
+        if teclas[pygame.K_UP]:
+            self.pulo()
+
+    def aplicar_gravidade(self):
+        """Função destinada a aplicar a gravidade no personagem"""
+        # Adicionar a gravidade no eixo Y do personagem
+        self.direcao.y += self.gravidade
+        self.rect.y += self.direcao.y
+
+    def pulo(self):
+        """Função destinada a configurar o pulo do personagem"""
+        self.direcao.y = self.velocidade_pulo
+
     def update(self):
         """Função destinada a atualizar o personagem"""
         # Obter a entrada do jogador
         self.obter_entrada()
-
-        # Atualizar a posição do personagem
-        self.rect.x += self.direcao.x * self.velocidade
