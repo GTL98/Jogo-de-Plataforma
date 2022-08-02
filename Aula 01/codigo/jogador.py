@@ -9,7 +9,7 @@ from suporte import importar_arquivos
 # Criar a classe do jogador
 class Jogador(pygame.sprite.Sprite):
     # Definir as variáveis iniciais da classe
-    def __init__(self, posicao):
+    def __init__(self, posicao, tela, criar_particulas_pulo):
         super().__init__()
 
         # Configurações da imagem
@@ -18,6 +18,13 @@ class Jogador(pygame.sprite.Sprite):
         self.velocidade_animacao = 0.15
         self.image = self.animacoes['parado'][self.indice_frame]
         self.rect = self.image.get_rect(topleft=posicao)
+
+        # Configurações das partículas
+        self.importar_particulas_corrida()
+        self.particulas_indice_frame = 0
+        self.particulas_animacao_velocidade = 0.15
+        self.tela = tela  # colocar as partículas como objetos da tela e não do personagem
+        self.criar_particulas_pulo = criar_particulas_pulo  # criar as partícula quando o personagem pular
 
         # Configurações do movimento do personagem
         self.velocidade = 8
@@ -45,6 +52,10 @@ class Jogador(pygame.sprite.Sprite):
         for animacao in self.animacoes.keys():
             caminho_completo = f'{caminho_imagens}{animacao}'
             self.animacoes[animacao] = importar_arquivos(caminho_completo)
+
+    def importar_particulas_corrida(self):
+        """Função destinada a importar os sprites de partículas quando o personagem correr"""
+        self.particulas_corrida = importar_arquivos('../graficos/personagem/particulas_poeira/correr')
 
     def animar(self):
         """Função destinada a animar o personagem"""
@@ -86,6 +97,28 @@ class Jogador(pygame.sprite.Sprite):
         else:
             self.rect = self.image.get_rect(center=self.rect.center)  # pega o rect da imagem anterior
 
+    def animacao_particulas_corrida(self):
+        """Função destinada a animar as partículas quando o personagem correr"""
+        # Verificar se o estado do personagem está em "correr" e se está no chão
+        if self.estado == 'correr' and self.no_chao:
+            self.particulas_indice_frame += self.particulas_animacao_velocidade
+            # Se "self.particulas_indice_frame" for maior ou igual ao tamanho de "self.particulas_corrida"
+            # o "self.particulas_indice_frame" volta para 0 para reiniciar a animação
+            if self.particulas_indice_frame >= len(self.particulas_corrida):
+                self.particulas_indice_frame = 0
+
+            # Obter o frame da partícula quando o personagem corre
+            particulas = self.particulas_corrida[int(self.particulas_indice_frame)]
+
+            # Montar a animação para a direita
+            if self.olhar_direita:
+                posicao = self.rect.bottomleft - pygame.math.Vector2(6, 10)
+                self.tela.blit(particulas, posicao)
+            else:
+                posicao = self.rect.bottomright - pygame.math.Vector2(6, 10)
+                particulas_invertidas = pygame.transform.flip(particulas, True, False)
+                self.tela.blit(particulas_invertidas, posicao)
+
     def obter_entrada(self):
         """Função destinada a obter a entrada de comandos do jogador"""
         # Criar uma lista com todas as teclas possíveis de serem pressionadas
@@ -108,6 +141,7 @@ class Jogador(pygame.sprite.Sprite):
         # Pular
         if teclas[pygame.K_UP] and self.no_chao:
             self.pulo()
+            self.criar_particulas_pulo(self.rect.midbottom)
 
     def obter_estado(self):
         """Função destinada a obter o estado do personagem para aplicar a animação correta"""
@@ -149,3 +183,6 @@ class Jogador(pygame.sprite.Sprite):
 
         # Animação do personagem
         self.animar()
+
+        # Animação das partículas quando o personagem correr
+        self.animacao_particulas_corrida()
