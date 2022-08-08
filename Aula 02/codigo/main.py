@@ -23,7 +23,7 @@ while True:
             sys.exit()
 
     # Preencher a tela
-    tela.fill('black')
+    tela.fill('grey')
 
     # Executar o mapa do level
     level.executar()

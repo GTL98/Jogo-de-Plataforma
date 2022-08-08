@@ -1,5 +1,6 @@
 # Importar as bibliotecas
 import pygame
+from os import walk
 from csv import reader
 
 # Importar os módulos criados
@@ -40,8 +41,25 @@ def importar_tiles_cortados(caminho):
             x = coluna * TAMANHO_TILE
             y = linha * TAMANHO_TILE
             # Cada tile da imagem será criado separadamente, mas na mesma imagem
-            nova_imagem = pygame.Surface((TAMANHO_TILE, TAMANHO_TILE))
+            # "pygame.SCRALPHA" em "flags" tira o fundo preto das imagens .png, ou seja,
+            # as imagens ficam com o valor alfa do fundo como 0
+            nova_imagem = pygame.Surface((TAMANHO_TILE, TAMANHO_TILE), flags=pygame.SRCALPHA)
             nova_imagem.blit(imagem, (0, 0), pygame.Rect(x, y, TAMANHO_TILE, TAMANHO_TILE))
             tiles_cortados.append(nova_imagem)
 
     return tiles_cortados
+
+
+def importar_arquivos(caminho):
+    """Função destinada a importar os arquivos para os tiles animados"""
+    # Criar uma lista para armazenar imagens
+    lista_imagens = []
+
+    # Obter a imagem de cada frame da pasta que será usada para o tile animado
+    for _, __, arquivos in walk(caminho):
+        for arquivo in arquivos:
+            caminho_completo = caminho + arquivo  # obter o caminho completo de cada imagem
+            imagem = pygame.image.load(caminho_completo).convert_alpha()
+            lista_imagens.append(imagem)
+
+    return lista_imagens
